@@ -6,10 +6,14 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
+    path: Assets/Scenes/1 Start Scene.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Scenes/Prototype 1.unity
+    guid: 84729eeda748340d0955715b6a50b370
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 0d16819d3ab802a4ea64b8c146b71ae9, type: 2}
     com.unity.xr.openxr.settings4: {fileID: 11400000, guid: 0bc8e613eca2c6b43ab41be233327c1a, type: 2}
+    xr.sdk.mock-hmd.settings: {fileID: 11400000, guid: c8064f0ea65646e42a07c206c4687eb2, type: 2}
   m_UseUCBPForAssetBundles: 0
