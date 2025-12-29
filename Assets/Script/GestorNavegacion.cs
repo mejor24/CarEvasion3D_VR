@@ -7,71 +7,62 @@ public class GestorNavegacion : MonoBehaviour
     public GameObject paginaLogo;
     public GameObject paginaLogin;
     public GameObject paginaRegistro;
-    public GameObject paginaMenuPrincipal;
-    public GameObject paginaOpciones; 
-    public GameObject paginaTutorial; 
+    public GameObject paginaMenuPrincipal; // Este se usará si el menú está en la misma escena
+    public GameObject paginaOpciones;
+    public GameObject paginaTutorial;
 
-    
     public void AbrirLogin()
     {
-        DesactivarTodo();
-        paginaLogin.SetActive(true);
+        if (SceneManager.GetActiveScene().buildIndex == 0)
+        {
+            SceneManager.LoadScene(1); // Carga InicioSession
+        }
+        else
+        {
+            DesactivarTodo();
+            if (paginaLogin != null) paginaLogin.SetActive(true);
+        }
     }
 
-   
     public void AbrirRegistro()
     {
         DesactivarTodo();
-        paginaRegistro.SetActive(true);
+        if (paginaRegistro != null) paginaRegistro.SetActive(true);
     }
 
-    
+    // ACTUALIZADO: Ahora carga la escena del Menú
     public void EntrarAlMenuPrincipal()
     {
-        DesactivarTodo();
-        paginaMenuPrincipal.SetActive(true);
+        // Si tu escena de menú se llama "Menu", cámbialo aquí
+        // Esto es necesario para que realmente saltes de escena al loguearte
+        SceneManager.LoadScene("Menu");
     }
 
-    
-    public void AbrirOpciones() 
+    public void AbrirOpciones()
     {
         DesactivarTodo();
-        paginaOpciones.SetActive(true);
+        if (paginaOpciones != null) paginaOpciones.SetActive(true);
     }
 
-    public void AbrirTutorial() 
+    public void AbrirTutorial()
     {
         DesactivarTodo();
-        paginaTutorial.SetActive(true);
+        if (paginaTutorial != null) paginaTutorial.SetActive(true);
     }
 
-    public void VolverAlMenu() 
-    {
-        DesactivarTodo();
-        paginaMenuPrincipal.SetActive(true);
-    }
-
-    
-    public void CerrarSesion()
-    {
-        DesactivarTodo();
-        paginaLogin.SetActive(true);
-    }
-
-    
     public void Jugar()
     {
-        SceneManager.LoadScene("Prototype 1"); 
+        // Carga la escena de la carretera
+        SceneManager.LoadScene("Prototype 1");
     }
 
-    
     private void DesactivarTodo()
     {
         if (paginaLogo != null) paginaLogo.SetActive(false);
         if (paginaLogin != null) paginaLogin.SetActive(false);
         if (paginaRegistro != null) paginaRegistro.SetActive(false);
         if (paginaMenuPrincipal != null) paginaMenuPrincipal.SetActive(false);
-        if (paginaOpciones != null) paginaOpciones.SetActive(false); 
+        if (paginaOpciones != null) paginaOpciones.SetActive(false);
         if (paginaTutorial != null) paginaTutorial.SetActive(false);
     }
 }
