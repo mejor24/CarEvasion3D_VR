@@ -1,33 +1,49 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class ControlesJugador : MonoBehaviour
 {
-    public float velocidadInicial = 15.0f;
-    public float aceleracion = 0.5f; // Cuánto aumenta la velocidad por segundo
-    public float velocidadLateral = 10.0f; // Qué tan rápido cambia de carril
-    
-    private float velocidadActual;
-    private float entradaHorizontal;
+    [Header("Input")]
+    public InputActionReference accionMovimiento;
 
-    void Start()
+    [Header("Movimiento")]
+    public float velocidadAdelante = 25f;
+    public float aceleracion = 0.5f;
+    public float velocidadLateral = 10f;
+
+    void OnEnable()
     {
-        // Empezamos con la velocidad mínima que pediste
-        velocidadActual = velocidadInicial;
+        accionMovimiento.action.Enable();
+    }
+
+    void OnDisable()
+    {
+        accionMovimiento.action.Disable();
     }
 
     void Update()
     {
-        // 1. Aumento progresivo de velocidad
-        velocidadActual += aceleracion * Time.deltaTime;
+        // Aceleración automática
+        velocidadAdelante += aceleracion * Time.deltaTime;
 
-        // 2. Obtener entrada lateral (A/D o Flechas)
-        entradaHorizontal = Input.GetAxis("Horizontal");
+        // Avanza
+        transform.Translate(Vector3.forward * velocidadAdelante * Time.deltaTime, Space.Self);
 
-        // 3. Movimiento hacia adelante constante y progresivo
-        transform.Translate(Vector3.forward * Time.deltaTime * velocidadActual);
+        // Leer A / D
+        float x = accionMovimiento.action.ReadValue<Vector2>().x;
 
-        // 4. Cambio de carril (Movimiento lateral en el eje X)
-        // Usamos Vector3.right para que se mueva de lado en lugar de girar
-        transform.Translate(Vector3.right * Time.deltaTime * velocidadLateral * entradaHorizontal);
+        // Desplazamiento lateral (SIN GIRAR)
+        transform.Translate(Vector3.right * x * velocidadLateral * Time.deltaTime, Space.Self);
+    }
+    private void OnCollisionEnter(Collision collision)
+    {
+        // Verifica si chocamos con el Tag "Obstaculo" que ya configuraste
+        if (collision.gameObject.CompareTag("Obstaculo"))
+        {
+            // Reinicia la escena actual
+            UnityEngine.SceneManagement.SceneManager.LoadScene(
+                UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+        }
     }
 }
+
