@@ -1,66 +1,62 @@
 using UnityEngine;
-using TMPro; // Necesario para leer tus InputFields
+using TMPro; // Necesario para los cuadros de texto
+using UnityEngine.SceneManagement;
 
 public class GestorAutenticacion : MonoBehaviour
 {
-    [Header("Campos de Registro")]
-    public TMP_InputField usuarioRegistro;
-    public TMP_InputField contraRegistro;
-
-    [Header("Campos de Login")]
+    [Header("Campos de Login (Panel LOGIN)")]
     public TMP_InputField usuarioLogin;
-    public TMP_InputField contraLogin;
+    public TMP_InputField contrasenaLogin;
 
-    public GestorNavegacion navegacion; // Para cambiar de panel automáticamente
+    [Header("Campos de Registro (Panel REGISTRO)")]
+    public TMP_InputField usuarioRegistro;
+    public TMP_InputField contrasenaRegistro;
 
-    // FUNCIÓN PARA CREAR CUENTA
-    public void RegistrarUsuario()
+    [Header("Navegación")]
+    public GestorNavegacion navegador; // Referencia al objeto Sistema_Menu
+
+    public void CrearCuenta()
     {
+        // Lee los datos de los campos del panel de REGISTRO
         string user = usuarioRegistro.text;
-        string pass = contraRegistro.text;
+        string pass = contrasenaRegistro.text;
 
-        if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pass))
+        if (!string.IsNullOrEmpty(user) && !string.IsNullOrEmpty(pass))
         {
-            Debug.Log("Error: Debes llenar todos los campos");
-            return;
-        }
+            // Guarda los datos en la memoria del dispositivo
+            PlayerPrefs.SetString("UsuarioGuardado", user);
+            PlayerPrefs.SetString("ContrasenaGuardada", pass);
+            PlayerPrefs.Save();
 
-        // Guardamos los datos localmente
-        PlayerPrefs.SetString("User_" + user, pass);
-        PlayerPrefs.Save();
+            Debug.Log("Cuenta creada con éxito: " + user);
 
-        Debug.Log("Cuenta creada con éxito para: " + user);
-
-        // Limpiamos campos y mandamos al Login
-        usuarioRegistro.text = "";
-        contraRegistro.text = "";
-        navegacion.AbrirLogin();
-    }
-
-    // FUNCIÓN PARA INICIAR SESIÓN
-    public void VerificarLogin()
-    {
-        string user = usuarioLogin.text;
-        string pass = contraLogin.text;
-
-        // Validamos si el usuario existe
-        if (PlayerPrefs.HasKey("User_" + user))
-        {
-            string passGuardada = PlayerPrefs.GetString("User_" + user);
-
-            if (pass == passGuardada)
-            {
-                Debug.Log("¡Acceso concedido!");
-                navegacion.EntrarAlMenuPrincipal();
-            }
-            else
-            {
-                Debug.Log("Error: Contraseña incorrecta");
-            }
+            // Limpia los campos y regresa al Login para entrar
+            usuarioRegistro.text = "";
+            contrasenaRegistro.text = "";
+            if (navegador != null) navegador.AbrirLogin();
         }
         else
         {
-            Debug.Log("Error: El usuario no existe");
+            Debug.LogWarning("Campos de registro vacíos");
+        }
+    }
+
+    public void IniciarSesion()
+    {
+        // Lee los datos de los campos del panel de LOGIN
+        string user = usuarioLogin.text;
+        string pass = contrasenaLogin.text;
+
+        // Compara con los datos guardados en PlayerPrefs
+        if (user == PlayerPrefs.GetString("UsuarioGuardado") &&
+            pass == PlayerPrefs.GetString("ContrasenaGuardada"))
+        {
+            Debug.Log("Login exitoso");
+            navegador.EntrarAlMenuPrincipal(); // Carga la escena o panel de Menú
+        }
+        else
+        {
+            Debug.LogError("Usuario o contraseña incorrectos");
         }
     }
 }

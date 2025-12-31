@@ -9,7 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8844051894804866804}
-  - component: {fileID: 8501711527854505478}
+  - component: {fileID: -9143439214833253339}
+  - component: {fileID: -2251436710830086919}
   m_Layer: 0
   m_Name: Piramide_Obstaculo
   m_TagString: Obstaculo
@@ -37,7 +38,7 @@ Transform:
   - {fileID: 474993261220055796}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &8501711527854505478
+--- !u!65 &-9143439214833253339
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -56,8 +57,21 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 5.1622295, y: 3.354268, z: 1.7910156}
+  m_Center: {x: 0.6413517, y: 1.6172838, z: -512.42896}
+--- !u!114 &-2251436710830086919
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 894465285541070885}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad0bb711b81673d4094f6d5967c9f791, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PosicionAleatoriaObstaculo
+  rangoX: 4
 --- !u!1001 &2033929480290651141
 PrefabInstance:
   m_ObjectHideFlags: 0
