@@ -1,5 +1,5 @@
 using UnityEngine;
-using TMPro; // Necesario para los cuadros de texto
+using TMPro;
 using UnityEngine.SceneManagement;
 
 public class GestorAutenticacion : MonoBehaviour
@@ -13,24 +13,41 @@ public class GestorAutenticacion : MonoBehaviour
     public TMP_InputField contrasenaRegistro;
 
     [Header("Navegación")]
-    public GestorNavegacion navegador; // Referencia al objeto Sistema_Menu
+    public GestorNavegacion navegador;
+
+   
+
+    void Awake()
+    {
+        
+        DontDestroyOnLoad(this.gameObject);
+    }
+
+    
+    public void EstablecerNombreUsuario(string nombre)
+    {
+        if (!string.IsNullOrEmpty(nombre))
+        {
+            PlayerPrefs.SetString("NombreUsuario", nombre);
+            PlayerPrefs.Save();
+            Debug.Log("Nombre de usuario capturado para la sesión: " + nombre);
+        }
+    }
+
 
     public void CrearCuenta()
     {
-        // Lee los datos de los campos del panel de REGISTRO
         string user = usuarioRegistro.text;
         string pass = contrasenaRegistro.text;
 
         if (!string.IsNullOrEmpty(user) && !string.IsNullOrEmpty(pass))
         {
-            // Guarda los datos en la memoria del dispositivo
             PlayerPrefs.SetString("UsuarioGuardado", user);
             PlayerPrefs.SetString("ContrasenaGuardada", pass);
             PlayerPrefs.Save();
 
             Debug.Log("Cuenta creada con éxito: " + user);
 
-            // Limpia los campos y regresa al Login para entrar
             usuarioRegistro.text = "";
             contrasenaRegistro.text = "";
             if (navegador != null) navegador.AbrirLogin();
@@ -43,20 +60,42 @@ public class GestorAutenticacion : MonoBehaviour
 
     public void IniciarSesion()
     {
-        // Lee los datos de los campos del panel de LOGIN
         string user = usuarioLogin.text;
         string pass = contrasenaLogin.text;
 
-        // Compara con los datos guardados en PlayerPrefs
         if (user == PlayerPrefs.GetString("UsuarioGuardado") &&
             pass == PlayerPrefs.GetString("ContrasenaGuardada"))
         {
             Debug.Log("Login exitoso");
-            navegador.EntrarAlMenuPrincipal(); // Carga la escena o panel de Menú
+
+            
+            PlayerPrefs.SetString("NombreUsuario", user);
+            PlayerPrefs.Save();
+
+            navegador.EntrarAlMenuPrincipal();
         }
         else
         {
             Debug.LogError("Usuario o contraseña incorrectos");
+        }
+    }
+
+    public void RegistrarPuntaje(float tiempo)
+    {
+        string usuarioActual = PlayerPrefs.GetString("NombreUsuario", "Invitado");
+        float recordActual = PlayerPrefs.GetFloat("Record_" + usuarioActual, 0f);
+
+        if (tiempo > recordActual)
+        {
+            PlayerPrefs.SetFloat("Record_" + usuarioActual, tiempo);
+
+            string lista = PlayerPrefs.GetString("ListaUsuariosRegistrados", "");
+            if (!lista.Contains(usuarioActual))
+            {
+                PlayerPrefs.SetString("ListaUsuariosRegistrados", lista + usuarioActual + ",");
+            }
+            PlayerPrefs.Save();
+            Debug.Log("Puntaje registrado para: " + usuarioActual + " - Tiempo: " + tiempo);
         }
     }
 }

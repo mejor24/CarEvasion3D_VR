@@ -1,8 +1,8 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
-using TMPro; // Necesario para el texto de la cuenta regresiva
-using System.Collections; // Necesario para las Coroutines
+using TMPro;
+using System.Collections;
 
 public class ControlesJugador : MonoBehaviour
 {
@@ -12,94 +12,134 @@ public class ControlesJugador : MonoBehaviour
     [Header("Movimiento")]
     public float velocidadAdelante = 25f;
     public float aceleracion = 0.5f;
-    public float velocidadLateral = 10f;
-    private bool puedeMoverse = false; // Bloquea el auto al inicio
+    public float velocidadLateral = 15f;
+    private bool puedeMoverse = false;
 
-    [Header("Sistema de Vidas")]
+    [Header("Sistema de Vidas y Tiempo")]
     public int vidas = 3;
+    private float tiempoTranscurrido = 0f;
+    public TextMeshProUGUI textoCronometro;
 
     [Header("Interfaz de Inicio")]
-    public TextMeshProUGUI textoCuentaRegresiva; // Arrastra tu texto aquí
+    public TextMeshProUGUI textoCuentaRegresiva;
+
+    [Header("Audio")]
+    private AudioSource fuenteAudio;
+
+    [Header("Referencias VR (Ocultar Manos)")]
+    public GameObject manoIzquierda; // Arrastra el Left Hand Model aquÃ­
+    public GameObject manoDerecha;   // Arrastra el Right Hand Model aquÃ­
+
+    private string nombreUsuario;
 
     void Start()
     {
-        // Al iniciar la escena, lanzamos el conteo
+        nombreUsuario = PlayerPrefs.GetString("NombreUsuario", "Invitado");
+        Time.timeScale = 1f;
+        fuenteAudio = GetComponent<AudioSource>();
+
+        if (textoCronometro != null) textoCronometro.text = "00:00";
+
+        // Aseguramos que las manos estÃ©n visibles durante la cuenta regresiva
+        SetManosVisibles(true);
+
         StartCoroutine(RutinaInicio());
     }
 
     IEnumerator RutinaInicio()
     {
-        puedeMoverse = false; // Aseguramos que el auto no acelere todavía
+        puedeMoverse = false;
+        if (textoCuentaRegresiva != null)
+        {
+            textoCuentaRegresiva.gameObject.SetActive(true);
+            textoCuentaRegresiva.text = "3"; yield return new WaitForSeconds(1);
+            textoCuentaRegresiva.text = "2"; yield return new WaitForSeconds(1);
+            textoCuentaRegresiva.text = "1"; yield return new WaitForSeconds(1);
+            textoCuentaRegresiva.text = "Â¡LISTO!"; yield return new WaitForSeconds(1);
+            textoCuentaRegresiva.gameObject.SetActive(false);
+        }
 
-        textoCuentaRegresiva.text = "3";
-        yield return new WaitForSeconds(1);
-
-        textoCuentaRegresiva.text = "2";
-        yield return new WaitForSeconds(1);
-
-        textoCuentaRegresiva.text = "1";
-        yield return new WaitForSeconds(1);
-
-        textoCuentaRegresiva.text = "¡LISTO!";
-        puedeMoverse = true; // El taxi comienza a acelerar automáticamente
-
-        yield return new WaitForSeconds(1);
-        textoCuentaRegresiva.gameObject.SetActive(false); // Ocultamos el texto
-    }
-
-    void OnEnable()
-    {
-        accionMovimiento.action.Enable();
-    }
-
-    void OnDisable()
-    {
-        accionMovimiento.action.Disable();
+        // OCULTAR MANOS justo cuando empieza el movimiento para mayor inmersiÃ³n
+        SetManosVisibles(false);
+        puedeMoverse = true;
     }
 
     void Update()
     {
-        // Si la cuenta regresiva no ha terminado, no hacemos nada
         if (!puedeMoverse) return;
 
-        // CORRECCIÓN: Forzamos la rotación para que el taxi no se gire al chocar
+        tiempoTranscurrido += Time.deltaTime;
+        ActualizarTextoCronometro();
+
         transform.rotation = Quaternion.Euler(0, 0, 0);
-
-        // Aceleración automática progresiva
         velocidadAdelante += aceleracion * Time.deltaTime;
-
-        // Avanzar hacia adelante
         transform.Translate(Vector3.forward * velocidadAdelante * Time.deltaTime, Space.Self);
 
-        // Leer Input lateral (VR o Teclado)
-        float x = accionMovimiento.action.ReadValue<Vector2>().x;
+        if (accionMovimiento != null)
+        {
+            float x = accionMovimiento.action.ReadValue<Vector2>().x;
+            transform.Translate(Vector3.right * x * velocidadLateral * Time.deltaTime, Space.Self);
+        }
+    }
 
-        // Desplazamiento lateral
-        transform.Translate(Vector3.right * x * velocidadLateral * Time.deltaTime, Space.Self);
+    void ActualizarTextoCronometro()
+    {
+        if (textoCronometro != null)
+        {
+            int minutos = Mathf.FloorToInt(tiempoTranscurrido / 60);
+            int segundos = Mathf.FloorToInt(tiempoTranscurrido % 60);
+            textoCronometro.text = string.Format("{0:00}:{1:00}", minutos, segundos);
+        }
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        // Verifica impacto con el Tag "Obstaculo"
         if (collision.gameObject.CompareTag("Obstaculo"))
         {
-            vidas--;
-            Debug.Log("¡CHOQUE! Vidas restantes: " + vidas);
+            if (fuenteAudio != null) fuenteAudio.Play();
 
+            vidas--;
             if (vidas > 0)
             {
-                // Evitamos que el auto traspase o pierda todas las vidas juntas
                 Destroy(collision.gameObject);
-
-                // Pequeño retroceso visual del impacto
                 transform.Translate(Vector3.back * 2f, Space.Self);
             }
             else
             {
-                // Fin del juego: Reinicia la escena
-                Debug.Log("GAME OVER. Reiniciando nivel...");
-                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+                FinalizarJuego();
             }
         }
     }
+
+    void FinalizarJuego()
+    {
+        puedeMoverse = false;
+
+        // MOSTRAR MANOS para poder usar los botones del menÃº final
+        SetManosVisibles(true);
+
+        PlayerPrefs.SetFloat("UltimoTiempo", tiempoTranscurrido);
+
+        GestorAutenticacion gestor = Object.FindFirstObjectByType<GestorAutenticacion>();
+        if (gestor != null)
+        {
+            gestor.RegistrarPuntaje(tiempoTranscurrido);
+        }
+        else
+        {
+            Debug.LogWarning("No se encontrÃ³ el GestorAutenticacion en la escena.");
+        }
+
+        SceneManager.LoadScene("menugameOver");
+    }
+
+    // FunciÃ³n auxiliar para controlar ambas manos a la vez
+    private void SetManosVisibles(bool estado)
+    {
+        if (manoIzquierda != null) manoIzquierda.SetActive(estado);
+        if (manoDerecha != null) manoDerecha.SetActive(estado);
+    }
+
+    void OnEnable() { if (accionMovimiento != null) accionMovimiento.action.Enable(); }
+    void OnDisable() { if (accionMovimiento != null) accionMovimiento.action.Disable(); }
 }
